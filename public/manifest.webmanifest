@@ -1,0 +1,25 @@
+{
+  "name": "NSpace — Digital Agency",
+  "short_name": "NSpace",
+  "description": "Award-winning digital agency crafting high-converting websites, brands and product interfaces.",
+  "id": "/",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#f2f2f7",
+  "theme_color": "#f2f2f7",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["business", "design", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Start a project", "url": "./#contact", "description": "Send a project brief" },
+    { "name": "Selected work", "url": "./#work", "description": "See recent projects" }
+  ]
+}
