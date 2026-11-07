@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { useEffect, useState, type ReactNode } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-// --- data
 const heroLeft = [
   { id: 1, src: "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/shot-1.webp", alt: "SaaS dashboard" },
   { id: 2, src: "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/shot-4.webp", alt: "Editorial" },
   { id: 3, src: "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/shot-6.webp", alt: "Product page" },
   { id: 4, src: "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/shot-7.webp", alt: "Mobile app" },
 ];
+
 const heroRight = [
   { id: 5, src: "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/shot-2.webp", alt: "Analytics" },
   { id: 6, src: "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/shot-5.webp", alt: "Agency site" },
@@ -101,172 +101,131 @@ const faqs = [
   },
 ];
 
-// small helper
 const cn = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(" ");
 
-function FadeBlur({
-  children,
-  delay = 0,
-  y = 22,
-  className,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  y?: number;
-  className?: string;
-}) {
+function FadeBlur({ children, delay = 0, y = 10 }: { children: ReactNode; delay?: number; y?: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y, filter: "blur(10px)" }}
+      initial={{ opacity: 0, y, filter: "blur(6px)" }}
       whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      viewport={{ once: true, amount: 0.35 }}
-      transition={{ duration: 0.62, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={className}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.55, delay, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>
   );
 }
 
-function Pill({ children }: { children: React.ReactNode }) {
+function Pill({ children }: { children: ReactNode }) {
   return (
-    <div className="px-3.5 py-[7px] text-[13px] xl:text-[13.5px] tracking-[-0.01em] text-foreground/78 card rounded-full">
+    <span className="inline-flex items-center rounded-[980px] bg-[#f5f5f7] px-[13px] py-[6px] text-[12px] font-[500] tracking-[0.01em] text-[#6e6e73] border border-black/[0.04]">
       {children}
-    </div>
+    </span>
   );
 }
 
-function PrimaryBtn({ children, href = "#", small = false }: { children: React.ReactNode; href?: string; small?: boolean }) {
-  return (
-    <a
-      href={href}
-      className={cn(
-        "group relative inline-flex items-center justify-center rounded-full primary-button font-medium tracking-[-0.012em] transition-all duration-300",
-        "hover:translate-y-[-1px] hover:shadow-[0_12px_40px_rgba(255,255,255,0.09)] active:translate-y-[0px]",
-        small ? "px-[18px] h-[42px] text-[14px]" : "px-[22px] h-[48px] text-[15px] md:px-[26px] md:h-[52px] md:text-[15.5px]"
-      )}
-    >
-      <span className="relative z-10 flex items-center gap-2">
+function PrimaryBtn({ children, href = "#", small = false, type }: { children: ReactNode; href?: string; small?: boolean; type?: "button" | "submit" }) {
+  const cls = cn(
+    "inline-flex items-center justify-center gap-[6px] rounded-[980px] bg-[#0071e3] text-white font-[500] transition-colors duration-200 hover:bg-[#0077ed] active:bg-[#006edb]",
+    small ? "h-[34px] px-[15px] text-[13px]" : "h-[46px] px-[24px] text-[16px]"
+  );
+  if (type) {
+    return (
+      <button type={type} className={cls}>
         {children}
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-[3px]">
-          <path d="M5 12h14" />
-          <path d="M12 5l7 7-7 7" />
-        </svg>
-      </span>
-    </a>
-  );
-}
-function SecondaryBtn({ children, href = "#", small = false }: { children: React.ReactNode; href?: string; small?: boolean }) {
+      </button>
+    );
+  }
   return (
-    <a
-      href={href}
-      className={cn(
-        "inline-flex items-center justify-center rounded-full secondary-button font-medium tracking-[-0.01em] border border-white/[0.09] hover:bg-[#242424] transition",
-        small ? "px-[18px] h-[42px] text-[14px]" : "px-[22px] h-[48px] text-[15px] md:px-[26px] md:h-[52px] md:text-[15.5px]"
-      )}
-    >
+    <a href={href} className={cls}>
       {children}
     </a>
   );
 }
 
-function SiteBackground() {
+function SecondaryBtn({ children, href = "#", small = false }: { children: ReactNode; href?: string; small?: boolean }) {
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
-      <div className="absolute inset-0 bg-aurora" />
-      {/* aurora orbs */}
-      <div className="absolute -top-40 left-[8%] w-[560px] h-[560px] rounded-full opacity-[.15] blur-[120px]"
-        style={{ background: "radial-gradient(circle, #c9d6ff 0%, #99aaff 35%, transparent 70%)" }} />
-      <div className="absolute top-[16%] right-[-8%] w-[520px] h-[520px] rounded-full opacity-[.1] blur-[110px]"
-        style={{ background: "radial-gradient(circle, #ffd8ba 0%, #ffb88a 35%, transparent 70%)" }} />
-      {/* light rays corner */}
-      <svg className="absolute right-[-80px] top-[-30px] w-[880px] h-[780px] opacity-[0.22] hidden md:block" viewBox="0 0 880 780" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g style={{ transformOrigin: "100% 0%" }}>
-          {Array.from({ length: 28 }).map((_, i) => (
-            <line
-              key={i}
-              x1="880"
-              y1="0"
-              x2={-40 + (i * 28)}
-              y2={760}
-              stroke="white"
-              strokeOpacity={0.20 - i * 0.005}
-              strokeWidth="1.2"
-              style={{ animation: "ray-pulse 3.8s ease-in-out infinite", animationDelay: `${i * 0.09}s` } as React.CSSProperties}
-            />
-          ))}
-        </g>
-      </svg>
-      <div className="absolute inset-0 bg-grid-faint opacity-[.55]" />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(10,10,10,0.14) 0%, rgba(10,10,10,0) 24%, rgba(10,10,10,0) 72%, rgba(10,10,10,0.3) 100%)" }} />
-    </div>
+    <a
+      href={href}
+      className={cn(
+        "inline-flex items-center justify-center gap-[6px] rounded-[980px] bg-white text-[#0071e3] border border-[#0071e3]/35 font-[500] transition-colors duration-200 hover:bg-[#f5f5f7]",
+        small ? "h-[34px] px-[15px] text-[13px]" : "h-[46px] px-[24px] text-[16px]"
+      )}
+    >
+      {children}
+    </a>
   );
 }
 
 function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 18);
+    const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll);
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
   return (
-    <div className="fixed top-0 left-0 right-0 z-[100] flex justify-center px-4 md:px-8 pt-[18px] md:pt-[26px]">
-      <motion.nav
-        initial={{ y: -18, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: .55, ease: [0.22,1,0.36,1] }}
+    <div className="fixed inset-x-0 top-0 z-50">
+      <nav
         className={cn(
-          "w-content-width flex items-center justify-between gap-6 px-[14px] md:px-[22px] h-[62px] md:h-[68px] rounded-[28px] transition-all duration-300",
+          "border-b transition-all duration-300",
           scrolled
-            ? "backdrop-blur-xl bg-[rgba(16,16,16,0.78)] border border-white/[0.11] shadow-[0_10px_50px_rgba(0,0,0,0.55)]"
-            : "backdrop-blur-[14px] bg-[rgba(18,18,18,0.52)] border border-white/[0.10]"
+            ? "bg-[rgba(251,251,253,0.86)] backdrop-blur-xl backdrop-saturate-180 border-black/[0.09] shadow-[0_1px_0_rgba(0,0,0,0.04)]"
+            : "bg-[rgba(251,251,253,0.72)] backdrop-blur-xl border-transparent"
         )}
       >
-        <a href="#" className="flex items-center gap-[11px] pl-1">
-          <div className="w-[34px] h-[34px] rounded-[12px] bg-white text-[#0d0d0d] grid place-items-center font-[700] text-[15px] tracking-tight">W</div>
-          <span className="text-[19px] font-[620] tracking-[-0.018em]">Webild</span>
-          <span className="hidden sm:inline text-[11px] text-foreground/56 -ml-[3px] mt-[3px]">®</span>
-        </a>
+        <div className="mx-auto flex h-[48px] max-w-[1024px] items-center justify-between px-[20px]">
+          <a href="#" className="flex items-center gap-[8px]">
+            <span className="grid h-[22px] w-[22px] place-items-center rounded-[6px] bg-[#1d1d1f] text-[12px] font-[700] text-white">N</span>
+            <span className="text-[15px] font-[600] tracking-[-0.01em] text-[#1d1d1f]">NSpace</span>
+            <span className="text-[9px] text-[#86868b]">®</span>
+          </a>
 
-        <div className="hidden lg:flex items-center gap-[30px] text-[14.5px] text-foreground/78">
-          <a href="#services" className="hover:text-white transition">Services</a>
-          <div className="relative group">
-            <button className="flex items-center gap-1 hover:text-white transition">
-              Work <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
-            </button>
-            <div className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+16px)] opacity-0 scale-[.97] pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto transition-all duration-200">
-              <div className="card rounded-[18px] py-[10px] w-[210px]">
-                {["Case Studies","Playground","Brand Work"].map(s => (
-                  <a key={s} className="block px-4 py-2.5 text-[13.8px] text-foreground/80 hover:text-white hover:bg-white/[0.035] rounded-[12px] mx-2 transition" href="#work">{s}</a>
-                ))}
+          <div className="hidden items-center gap-[26px] md:flex">
+            <a href="#services" className="text-[12px] text-[#1d1d1f]/80 transition hover:text-[#1d1d1f]">Services</a>
+            <div className="group relative">
+              <button className="flex items-center gap-[4px] text-[12px] text-[#1d1d1f]/80 transition hover:text-[#1d1d1f]">
+                Work
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m6 9 6 6 6-6" /></svg>
+              </button>
+              <div className="pointer-events-none absolute left-1/2 top-full w-[180px] -translate-x-1/2 pt-[10px] opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
+                <div className="rounded-[12px] border border-black/[0.07] bg-white p-[6px] shadow-[0_12px_34px_rgba(0,0,0,0.12)]">
+                  {["Case Studies", "Playground", "Brand Work"].map((s) => (
+                    <a key={s} href="#work" className="block rounded-[8px] px-[10px] py-[7px] text-[12.5px] text-[#1d1d1f]/85 hover:bg-[#f5f5f7]">{s}</a>
+                  ))}
+                </div>
               </div>
             </div>
+            <a href="#team" className="text-[12px] text-[#1d1d1f]/80 transition hover:text-[#1d1d1f]">Team</a>
+            <a href="#contact" className="text-[12px] text-[#1d1d1f]/80 transition hover:text-[#1d1d1f]">Contact</a>
           </div>
-          <a href="#team" className="hover:text-white transition">Team</a>
-          <a href="#contact" className="hover:text-white transition">Contact</a>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <a href="#contact" className="hidden md:inline-flex">
-            <span className="px-[20px] h-[42px] rounded-full primary-button text-[14.2px] font-[550] grid place-items-center tracking-[-0.01em] hover:translate-y-[-1px] transition-all">
+          <div className="flex items-center gap-[8px]">
+            <a
+              href="#contact"
+              className="hidden h-[28px] items-center rounded-[980px] bg-[#0071e3] px-[13px] text-[12px] font-[500] text-white transition hover:bg-[#0077ed] sm:inline-flex"
+            >
               Start Project
-            </span>
-          </a>
-          <button
-            onClick={() => setOpen(!open)}
-            className="lg:hidden w-[44px] h-[44px] rounded-full secondary-button border border-white/[0.09] grid place-items-center"
-            aria-label="Menu"
-          >
-            <div className="space-y-[5px]">
-              <div className="w-[18px] h-[1.8px] bg-white/85 rounded" />
-              <div className="w-[18px] h-[1.8px] bg-white/85 rounded" />
-              <div className="w-[18px] h-[1.8px] bg-white/85 rounded" />
-            </div>
-          </button>
+            </a>
+            <button
+              onClick={() => setOpen(!open)}
+              aria-label="Menu"
+              aria-expanded={open}
+              className="grid h-[44px] w-[44px] place-items-center md:hidden"
+            >
+              <div className="flex w-[18px] flex-col gap-[4px]">
+                <div className={cn("h-[1.5px] w-full rounded bg-[#1d1d1f] transition-transform", open && "translate-y-[5.5px] rotate-45")} />
+                <div className={cn("h-[1.5px] w-full rounded bg-[#1d1d1f] transition-opacity", open && "opacity-0")} />
+                <div className={cn("h-[1.5px] w-full rounded bg-[#1d1d1f] transition-transform", open && "-translate-y-[5.5px] -rotate-45")} />
+              </div>
+            </button>
+          </div>
         </div>
-      </motion.nav>
+      </nav>
 
       <AnimatePresence>
         {open && (
@@ -274,13 +233,25 @@ function Navbar() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="lg:hidden absolute top-[90px] w-[calc(100vw-32px)] max-w-[560px] card rounded-[22px] p-[14px]"
+            transition={{ duration: 0.22 }}
+            className="border-b border-black/[0.08] bg-[rgba(251,251,253,0.96)] backdrop-blur-2xl md:hidden"
           >
-            {["Services","Work","Team","Contact"].map((l) => (
-              <a key={l} href={`#${l.toLowerCase()}`} onClick={()=>setOpen(false)} className="block px-4 py-[13px] rounded-[14px] text-[15px] text-foreground/88 hover:bg-white/[0.045]">{l}</a>
-            ))}
-            <div className="px-4 pt-2 pb-1">
-              <a href="#contact" onClick={()=>setOpen(false)} className="block text-center py-3 rounded-full primary-button font-[560]">Start Project</a>
+            <div className="flex flex-col px-[20px] py-[16px]">
+              {["Services", "Work", "Team", "Contact"].map((l) => (
+                <a
+                  key={l}
+                  href={`#${l.toLowerCase()}`}
+                  onClick={() => setOpen(false)}
+                  className="flex min-h-[44px] items-center border-b border-black/[0.06] text-[17px] text-[#1d1d1f] last:border-0"
+                >
+                  {l}
+                </a>
+              ))}
+              <div className="pt-[14px]">
+                <a href="#contact" onClick={() => setOpen(false)} className="flex h-[44px] items-center justify-center rounded-[980px] bg-[#0071e3] text-[15px] font-[500] text-white">
+                  Start Project
+                </a>
+              </div>
             </div>
           </motion.div>
         )}
@@ -290,21 +261,16 @@ function Navbar() {
 }
 
 function MarqueeColumn({ items, reverse = false }: { items: typeof heroLeft; reverse?: boolean }) {
-  const loop = [...items, ...items, ...items, ...items];
+  const list = [...items, ...items];
   return (
-    <div className="flex-1 overflow-hidden mask-fade-y-medium rounded-[20px]">
-      <div className={reverse ? "animate-marquee-vertical-reverse" : "animate-marquee-vertical"}>
-        {loop.map((it, i) => (
-          <div key={i + "-" + it.id} className="mb-[12px] xl:mb-[14px] 2xl:mb-[16px] card rounded-[20px] p-[8px] xl:p-[10px] 2xl:p-[12px] glow-ring">
-            <div className="aspect-[4/5] rounded-[14px] overflow-hidden bg-[#121212] relative">
-              <img
-                src={it.src}
-                alt={it.alt}
-                className="w-full h-full object-cover object-top"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/[0.16] via-transparent to-transparent" />
-            </div>
+    <div className="flex-1">
+      <div className={cn("flex flex-col gap-[14px]", reverse ? "animate-marquee-vertical-reverse" : "animate-marquee-vertical")}>
+        {list.map((it, i) => (
+          <div
+            key={`${it.id}-${i}`}
+            className="overflow-hidden rounded-[16px] border border-black/[0.06] bg-white shadow-[0_2px_14px_rgba(0,0,0,0.05)]"
+          >
+            <img src={it.src} alt={it.alt} loading="lazy" className="block h-[150px] w-full object-cover sm:h-[176px]" />
           </div>
         ))}
       </div>
@@ -314,55 +280,54 @@ function MarqueeColumn({ items, reverse = false }: { items: typeof heroLeft; rev
 
 function Hero() {
   return (
-    <section id="hero" aria-label="Hero section" className="relative min-h-[860px] md:min-h-svh flex items-center pt-[120px] md:pt-0 pb-16 md:pb-0">
-      <div className="w-content-width mx-auto grid md:grid-cols-12 gap-10 md:gap-16 items-center">
-        <div className="md:col-span-6 lg:col-span-6">
-          <FadeBlur>
-            <Pill>Award-Winning Agency</Pill>
-          </FadeBlur>
-          <FadeBlur delay={0.06}>
-            <h1 className="mt-[18px] text-[44px] sm:text-[56px] md:text-[clamp(3rem,4vw,4rem)] 2xl:text-[4.6rem] leading-[1.06] font-[630] tracking-[-0.024em] text-balance gradient-text">
-              We Build<br />
-              Digital<br />
-              Experiences
-            </h1>
-          </FadeBlur>
-          <FadeBlur delay={0.13} y={16}>
-            <p className="mt-5 md:mt-7 max-w-[540px] text-[17px] md:text-[19px] leading-[1.55] text-foreground/70 text-balance">
-              Transform your brand with cutting-edge web design and development.
-              We craft stunning websites that convert visitors into customers.
-            </p>
-          </FadeBlur>
-          <FadeBlur delay={0.21}>
-            <div className="flex flex-wrap gap-3 mt-7 md:mt-8">
-              <PrimaryBtn href="#contact">Start Project</PrimaryBtn>
-              <SecondaryBtn href="#work">View Work</SecondaryBtn>
-            </div>
-          </FadeBlur>
-
-          <FadeBlur delay={0.32}>
-            <div className="flex items-center gap-5 mt-10 md:mt-12">
-              <div className="flex -space-x-[10px]">
-                {[
-                  "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/team-1.webp",
-                  "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/team-2.webp",
-                  "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/team-3.webp",
-                  "https://randomuser.me/api/portraits/men/32.jpg",
-                ].map((u, i) => (
-                  <img key={i} src={u} alt="" className="w-[36px] h-[36px] md:w-[42px] md:h-[42px] rounded-full border-[2px] border-[#0a0a0a] object-cover" />
-                ))}
+    <section id="hero" aria-label="Hero section" className="relative scroll-mt-[60px] overflow-hidden pt-[104px] pb-[56px] md:pt-[132px] md:pb-[76px]">
+      <div className="pointer-events-none absolute inset-0 bg-aurora" />
+      <div className="relative mx-auto w-[var(--width-content-width)]">
+        <div className="grid items-center gap-[44px] lg:grid-cols-2 lg:gap-[60px]">
+          <div>
+            <FadeBlur>
+              <Pill>Award-Winning Agency</Pill>
+            </FadeBlur>
+            <FadeBlur delay={0.06}>
+              <h1 className="mt-[16px] text-[44px] font-[600] leading-[1.03] tracking-[-0.028em] text-[#1d1d1f] sm:text-[56px] lg:text-[66px]">
+                We Build<br />Digital<br />Experiences
+              </h1>
+            </FadeBlur>
+            <FadeBlur delay={0.13} y={14}>
+              <p className="mt-[18px] max-w-[480px] text-[17px] leading-[1.47] text-[#6e6e73] sm:text-[19px]">
+                Transform your brand with cutting-edge web design and development. We craft stunning websites that convert visitors into customers.
+              </p>
+            </FadeBlur>
+            <FadeBlur delay={0.21}>
+              <div className="mt-[28px] flex flex-wrap items-center gap-[12px]">
+                <PrimaryBtn href="#contact">Start Project</PrimaryBtn>
+                <SecondaryBtn href="#work">View Work</SecondaryBtn>
               </div>
-              <div className="text-[12.5px] md:text-[13.4px] leading-[1.35] text-foreground/66">
-                Trusted by 120+ founders<br />4.9/5 avg. rating
+            </FadeBlur>
+            <FadeBlur delay={0.32}>
+              <div className="mt-[34px] flex items-center gap-[14px]">
+                <div className="flex">
+                  {[
+                    "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/team-1.webp",
+                    "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/team-2.webp",
+                    "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/team-3.webp",
+                    "https://randomuser.me/api/portraits/men/32.jpg",
+                  ].map((u, i) => (
+                    <img key={i} src={u} alt="" className="h-[32px] w-[32px] rounded-full border-2 border-white object-cover -ml-[9px] first:ml-0 shadow-[0_1px_3px_rgba(0,0,0,0.12)]" />
+                  ))}
+                </div>
+                <div className="text-[12.5px] leading-[1.45] text-[#6e6e73]">
+                  Trusted by 120+ founders<br />4.9/5 avg. rating
+                </div>
               </div>
-            </div>
-          </FadeBlur>
-        </div>
+            </FadeBlur>
+          </div>
 
-        <div className="md:col-span-6 lg:col-span-6">
-          <div className="h-[520px] md:h-[74vh] max-h-[820px] flex gap-[12px] xl:gap-[14px] 2xl:gap-[18px]">
-            <MarqueeColumn items={heroLeft} />
-            <MarqueeColumn items={heroRight} reverse />
+          <div className="relative">
+            <div className="mask-fade-y-medium flex h-[420px] gap-[14px] overflow-hidden sm:h-[480px]">
+              <MarqueeColumn items={heroLeft} />
+              <MarqueeColumn items={heroRight} reverse />
+            </div>
           </div>
         </div>
       </div>
@@ -370,95 +335,122 @@ function Hero() {
   );
 }
 
-function SectionHeader({ tag, title, desc, align="center" }: { tag: string; title: React.ReactNode; desc: string; align?: "center"|"left" }) {
+function SectionHeader({ tag, title, desc, align = "center" }: { tag: string; title: ReactNode; desc: string; align?: "center" | "left" }) {
   return (
-    <div className={cn("max-w-[860px]", align==="center" ? "mx-auto text-center" : "")}>
-      <FadeBlur><div className={cn(align==="center" ? "mx-auto" : "", "mb-3 w-fit")}><Pill>{tag}</Pill></div></FadeBlur>
-      <FadeBlur delay={0.07}>
-        <h2 className="text-[34px] sm:text-[44px] md:text-[52px] lg:text-[58px] leading-[1.1] font-[630] tracking-[-0.022em] gradient-text text-balance">
+    <div className={cn("max-w-[720px]", align === "center" ? "mx-auto text-center" : "text-left")}>
+      <FadeBlur>
+        <Pill>{tag}</Pill>
+      </FadeBlur>
+      <FadeBlur delay={0.06}>
+        <h2 className="mt-[14px] text-[32px] font-[600] leading-[1.08] tracking-[-0.022em] text-[#1d1d1f] sm:text-[40px] md:text-[46px]">
           {title}
         </h2>
       </FadeBlur>
-      <FadeBlur delay={0.14}>
-        <p className="mt-[14px] md:mt-[18px] text-[16.5px] md:text-[18.5px] leading-[1.55] text-foreground/68 text-balance">
-          {desc}
-        </p>
+      <FadeBlur delay={0.12}>
+        <p className="mt-[12px] text-[16px] leading-[1.5] text-[#6e6e73] sm:text-[17px]">{desc}</p>
       </FadeBlur>
+    </div>
+  );
+}
+
+function BarChart() {
+  const bars = [42, 58, 47, 72, 64, 88, 76];
+  return (
+    <div className="flex h-[150px] items-end justify-between gap-[10px] rounded-[14px] bg-[#f5f5f7] p-[16px]">
+      {bars.map((h, i) => (
+        <motion.div
+          key={i}
+          initial={{ height: 6 }}
+          whileInView={{ height: `${h}%` }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full rounded-[5px] bg-[#0071e3]"
+          style={{ opacity: 0.45 + i * 0.07 }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function OrbitIcons() {
+  const items = ["SEO", "CRO", "UX", "ADS", "CDN", "A/B"];
+  return (
+    <div className="grid grid-cols-3 gap-[10px]">
+      {items.map((t) => (
+        <div key={t} className="grid h-[62px] place-items-center rounded-[12px] bg-[#f5f5f7] text-[12px] font-[500] text-[#1d1d1f]/75">
+          {t}
+        </div>
+      ))}
     </div>
   );
 }
 
 function Services() {
   return (
-    <section id="services" className="relative py-[88px] md:py-[124px]">
-      <div className="w-content-width mx-auto">
+    <section id="services" className="band scroll-mt-[60px] py-[64px] md:py-[96px]">
+      <div className="mx-auto w-[var(--width-content-width)]">
         <SectionHeader
           tag="Services"
-          title={<>Services That<br className="hidden md:block" /> Drive Results</>}
+          title={<>Services That<br /> Drive Results</>}
           desc="We offer a full suite of digital services to help your brand stand out online."
         />
-        <div className="mt-[46px] md:mt-[62px] grid md:grid-cols-12 gap-[18px] md:gap-[22px]">
-          {/* Web Dev – big left */}
-          <FadeBlur className="md:col-span-7">
-            <div className="card rounded-[26px] p-[26px] md:p-[34px] h-full min-h-[440px] flex flex-col justify-between relative overflow-hidden shimmer-border">
-              <div>
-                <h3 className="text-[26px] md:text-[30px] font-[620] tracking-[-0.018em]">Web Development</h3>
-                <p className="mt-2 text-[15.5px] text-foreground/70 max-w-[420px]">Custom-built websites that are fast, responsive, and designed to convert.</p>
-              </div>
 
-              <div className="mt-10 md:mt-14 relative">
-                <div className="absolute left-[22px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-white/[0.22] via-white/[0.11] to-transparent" />
-                <div className="space-y-[20px] pl-[54px] relative">
-                  {[
-                    { label: "Discovery & Strategy", detail: "Day 1-3" },
-                    { label: "Design & Prototype", detail: "Day 4-7" },
-                    { label: "Development & Launch", detail: "Day 8-14" },
-                  ].map((s) => (
-                    <div key={s.label} className="relative">
-                      <div className="absolute -left-[44px] top-[6px] w-[18px] h-[18px] rounded-full bg-[#161616] border border-white/[0.22] grid place-items-center">
-                        <div className="w-[6px] h-[6px] rounded-full bg-white" />
-                      </div>
-                      <div className="flex items-baseline justify-between gap-4">
-                        <div className="text-[16.5px] font-[520]">{s.label}</div>
-                        <div className="text-[12.8px] text-foreground/62">{s.detail}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-[18px] pl-[54px]">
-                  <span className="inline-flex items-center gap-[7px] text-[12.7px] px-[11px] py-[6px] rounded-full secondary-button border border-white/[0.08]">
-                    <span className="w-[6px] h-[6px] bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.7)]" /> Live
-                  </span>
-                </div>
+        <div className="mt-[40px] grid gap-[16px] md:mt-[52px] md:grid-cols-2">
+          <FadeBlur>
+            <div className="card flex h-full flex-col justify-between rounded-[18px] p-[26px] md:p-[32px]">
+              <div>
+                <h3 className="text-[24px] font-[600] tracking-[-0.018em] text-[#1d1d1f]">Web Development</h3>
+                <p className="mt-[8px] max-w-[420px] text-[15px] leading-[1.55] text-[#6e6e73]">
+                  Custom-built websites that are fast, responsive, and designed to convert.
+                </p>
+              </div>
+              <div className="mt-[26px] space-y-[2px]">
+                {[
+                  { label: "Discovery & Strategy", detail: "Day 1-3" },
+                  { label: "Design & Prototype", detail: "Day 4-7" },
+                  { label: "Development & Launch", detail: "Day 8-14" },
+                ].map((s, i) => (
+                  <div key={s.label} className="flex items-center gap-[14px] rounded-[10px] bg-[#f5f5f7] px-[14px] py-[13px]">
+                    <div className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-[#0071e3] text-[11px] font-[600] text-white">{i + 1}</div>
+                    <div className="flex-1 text-[14px] font-[500] text-[#1d1d1f]">{s.label}</div>
+                    <div className="text-[12.5px] text-[#86868b]">{s.detail}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-[16px] flex items-center justify-end">
+                <span className="inline-flex items-center gap-[7px] rounded-[980px] bg-[#e8f5e9] px-[12px] py-[6px] text-[12px] font-[500] text-[#1d7a3c]">
+                  <span className="h-[6px] w-[6px] rounded-full bg-[#34c759]" /> Live
+                </span>
               </div>
             </div>
           </FadeBlur>
 
-          {/* SEO */}
-          <FadeBlur delay={0.08} className="md:col-span-5">
-            <div className="card rounded-[26px] p-[26px] md:p-[30px] h-full min-h-[440px] flex flex-col justify-between overflow-hidden">
+          <FadeBlur delay={0.08}>
+            <div className="card flex h-full flex-col justify-between rounded-[18px] p-[26px] md:p-[32px]">
               <div>
-                <h3 className="text-[23px] md:text-[26px] font-[620] tracking-[-0.015em]">SEO Optimization</h3>
-                <p className="mt-2 text-[15px] text-foreground/69">We optimize your website to rank higher on search engines and drive organic traffic.</p>
+                <h3 className="text-[24px] font-[600] tracking-[-0.018em] text-[#1d1d1f]">SEO Optimization</h3>
+                <p className="mt-[8px] max-w-[420px] text-[15px] leading-[1.55] text-[#6e6e73]">
+                  We optimize your website to rank higher on search engines and drive organic traffic.
+                </p>
               </div>
-              {/* animated bars */}
-              <div className="mt-8">
+              <div className="mt-[26px]">
                 <BarChart />
               </div>
             </div>
           </FadeBlur>
 
-          {/* Branding full width / bottom */}
-          <FadeBlur delay={0.14} className="md:col-span-12">
-            <div className="card rounded-[26px] p-[26px] md:p-[34px] grid md:grid-cols-12 gap-8 items-center overflow-hidden">
-              <div className="md:col-span-5">
-                <h3 className="text-[26px] md:text-[30px] font-[620] tracking-[-0.018em]">Branding</h3>
-                <p className="mt-[10px] text-[15.5px] text-foreground/71 max-w-[430px]">Build a memorable brand identity that resonates with your audience.</p>
-                <div className="flex gap-3 mt-5">
-                  <SecondaryBtn small href="#contact">Brand audit</SecondaryBtn>
+          <FadeBlur delay={0.14}>
+            <div className="card col-span-full rounded-[18px] p-[26px] md:p-[32px]">
+              <div className="grid items-center gap-[24px] md:grid-cols-[1.2fr_1fr]">
+                <div>
+                  <h3 className="text-[24px] font-[600] tracking-[-0.018em] text-[#1d1d1f]">Branding</h3>
+                  <p className="mt-[8px] max-w-[460px] text-[15px] leading-[1.55] text-[#6e6e73]">
+                    Build a memorable brand identity that resonates with your audience.
+                  </p>
+                  <div className="mt-[18px]">
+                    <SecondaryBtn small href="#contact">Brand audit</SecondaryBtn>
+                  </div>
                 </div>
-              </div>
-              <div className="md:col-span-7">
                 <OrbitIcons />
               </div>
             </div>
@@ -469,146 +461,39 @@ function Services() {
   );
 }
 
-function BarChart() {
-  const bars = [
-    { h: 52, hl: 78 },
-    { h: 70, hl: 95 },
-    { h: 46, hl: 70 },
-    { h: 82, hl: 100 },
-    { h: 58, hl: 83 },
-    { h: 40, hl: 60 },
-    { h: 66, hl: 90 },
-    { h: 74, hl: 88 },
-  ];
-  const [hover, setHover] = useState(false);
-  const [active, setActive] = useState(3);
-  useEffect(() => {
-    const id = setInterval(() => setActive(a => (a + 1) % bars.length), 2600);
-    return () => clearInterval(id);
-  }, []);
-  return (
-    <div
-      className="h-[190px] flex items-end gap-[14px]"
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{ maskImage: "linear-gradient(to top, black 40%, transparent)" }}
-    >
-      {bars.map((b, i) => (
-        <div key={i} className="flex-1 rounded-[8px] bg-[#232323] relative overflow-hidden" style={{ height: `${hover ? b.hl : b.h}%`, transition: "height .55s cubic-bezier(.22,1,.36,1)" }}>
-          <div className={cn("absolute inset-0 bg-white transition-opacity duration-500", active === i ? "opacity-100" : "opacity-0")} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function OrbitIcons() {
-  const icons = [
-    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/></svg>,
-    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
-    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>,
-    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M2 12h20"/></svg>,
-  ];
-  return (
-    <div className="relative h-[240px] md:h-[250px] flex items-center justify-center overflow-hidden"
-      style={{ perspective: "1200px", maskImage: "radial-gradient(ellipse at center, black 55%, transparent 90%)" }}>
-      <div className="absolute w-[170px] h-[170px] rounded-full border border-white/[0.07]" />
-      <div className="absolute w-[250px] h-[250px] rounded-full border border-white/[0.055]" />
-      <div className="absolute w-[330px] h-[330px] rounded-full border border-white/[0.038]" />
-      <div
-        className="relative"
-        style={{ transform: "rotateY(18deg) rotateX(16deg) rotateZ(-16deg)" }}
-      >
-        <div className="w-[84px] h-[84px] rounded-full primary-button grid place-items-center shadow-[0_10px_40px_rgba(255,255,255,0.06)]">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0d0d0d" strokeWidth="1.7"><path d="M12 2l2.9 6.9L22 12l-7.1 3.1L12 22l-2.9-6.9L2 12l7.1-3.1L12 2z"/></svg>
-        </div>
-        {icons.map((Icon, i) => {
-          const angle = (360 / icons.length) * i;
-          return (
-            <div
-              key={i}
-              className="absolute left-1/2 top-1/2 -ml-[20px] -mt-[20px]"
-              style={{
-                animation: "orbit 11s linear infinite",
-                // @ts-ignore custom props
-                "--initial-position": `${angle}deg`,
-                "--translate-position": `134px`,
-              } as React.CSSProperties}
-            >
-              <div className="w-[40px] h-[40px] rounded-[12px] card grid place-items-center">
-                <Icon />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function Work() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
   return (
-    <section id="work" className="relative py-[86px] md:py-[120px] border-t border-white/[0.065]">
-      <div className="w-content-width mx-auto">
-        <SectionHeader
-          tag="Our Work"
-          title="Work We're Proud Of"
-          desc="A selection of projects we've crafted for clients across industries."
-        />
+    <section id="work" className="scroll-mt-[60px] py-[64px] md:py-[96px]">
+      <div className="mx-auto w-[var(--width-content-width)]">
+        <div className="flex flex-col gap-[10px] md:flex-row md:items-end md:justify-between">
+          <SectionHeader align="left" tag="Work" title="Work We’re Proud Of" desc="A selection of projects we’ve crafted for clients across industries." />
+        </div>
 
-        <div className="mt-[44px] md:mt-[60px] relative">
-          <div
-            ref={ref}
-            className="flex gap-[18px] md:gap-[24px] overflow-x-auto no-scrollbar snap-x snap-mandatory pb-4"
-            onScroll={(e) => {
-              const el = e.currentTarget;
-              const idx = Math.round(el.scrollLeft / (el.firstElementChild?.clientWidth || 1 + 24));
-              setActive(Math.max(0, Math.min(idx, workItems.length-1)));
-            }}
-          >
-            {workItems.map((w) => (
-              <div
-                key={w.title}
-                className="snap-start shrink-0 w-[86vw] sm:w-[520px] md:w-[560px] lg:w-[610px]"
-              >
-                <div className="card rounded-[26px] overflow-hidden group">
-                  <div className="relative aspect-[16/10] overflow-hidden bg-[#111]">
-                    <img src={w.img} alt={w.title} className="w-full h-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.045]" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/8 to-transparent" />
-                    <a href="#" className="absolute right-4 top-4 w-[44px] h-[44px] rounded-full bg-white/96 text-[#111] grid place-items-center hover:scale-105 transition">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
-                    </a>
-                    <div className="absolute left-[20px] bottom-[18px] right-[20px]">
-                      <div className="text-[12.8px] text-white/78">{w.cat}</div>
-                      <div className="text-[22px] md:text-[26px] font-[600] tracking-[-0.016em] text-white">{w.title}</div>
-                    </div>
+        <div className="no-scrollbar mt-[34px] flex snap-x snap-mandatory gap-[16px] overflow-x-auto pb-[6px] md:mt-[44px]">
+          {workItems.map((w, i) => (
+            <FadeBlur key={w.title} delay={i * 0.06}>
+              <div className="card group w-[84vw] snap-start overflow-hidden rounded-[18px] sm:w-[420px] lg:w-[440px]">
+                <div className="relative aspect-[16/10] overflow-hidden bg-[#f5f5f7]">
+                  <img src={w.img} alt={w.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-[700ms] group-hover:scale-[1.03]" />
+                </div>
+                <div className="flex items-center justify-between gap-[12px] p-[18px]">
+                  <div>
+                    <div className="text-[13px] text-[#86868b]">{w.cat}</div>
+                    <div className="mt-[2px] text-[19px] font-[600] tracking-[-0.015em] text-[#1d1d1f]">{w.title}</div>
+                  </div>
+                  <div className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-black/[0.08] text-[#0071e3] transition group-hover:bg-[#f5f5f7]">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </FadeBlur>
+          ))}
+        </div>
 
-          <div className="flex items-center justify-center gap-[10px] mt-6">
-            {workItems.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  const el = ref.current;
-                  if (!el) return;
-                  const card = el.querySelector<HTMLElement>("div > div");
-                  const w = card ? card.offsetWidth + 24 : 560;
-                  el.scrollTo({ left: i * w, behavior: "smooth" });
-                }}
-                className={cn(
-                  "h-[7px] rounded-full transition-all",
-                  active === i ? "w-[34px] bg-white" : "w-[7px] bg-white/26"
-                )}
-                aria-label={`Go to slide ${i+1}`}
-              />
-            ))}
-          </div>
+        <div className="mt-[22px] flex items-center justify-center gap-[7px]">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className={cn("h-[7px] rounded-full transition-all", i === 0 ? "w-[26px] bg-[#1d1d1f]" : "w-[7px] bg-[#d2d2d7]")} />
+          ))}
         </div>
       </div>
     </section>
@@ -616,24 +501,22 @@ function Work() {
 }
 
 function PromiseSection() {
-  const feats = [
+  const items = [
     { icon: "◱", title: "Responsive Design", desc: "Pixel-perfect websites that look stunning on every screen size and device." },
-    { icon: "↗", title: "Fast Turnaround", desc: "From concept to launch in record time without sacrificing quality." },
-    { icon: "◆", title: "Secure Hosting", desc: "Enterprise-grade security and 99.9% uptime for your website." },
+    { icon: "◷", title: "Fast Turnaround", desc: "From concept to launch in record time without sacrificing quality." },
+    { icon: "⛨", title: "Secure Hosting", desc: "Enterprise-grade security and 99.9% uptime for your website." },
   ];
   return (
-    <section id="promise" className="relative py-[84px] md:py-[118px]">
-      <div className="w-content-width mx-auto">
-        <SectionHeader tag="Our Promise" title="Why Brands Choose Webild" desc="We deliver results that speak for themselves." />
-        <div className="mt-[48px] md:mt-[66px] grid md:grid-cols-3 gap-[18px] md:gap-[22px]">
-          {feats.map((f, i) => (
-            <FadeBlur key={f.title} delay={i * 0.07}>
-              <div className="relative card rounded-[24px] p-[26px] md:p-[30px] h-full glow-ring group hover:translate-y-[-3px] transition-transform duration-300">
-                <div className="absolute inset-0 rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{ background: "radial-gradient(480px 180px at 50% -20%, rgba(255,255,255,0.055), transparent 70%)" }} />
-                <div className="w-[46px] h-[46px] rounded-[14px] secondary-button border border-white/[0.09] grid place-items-center text-[17px]">{f.icon}</div>
-                <div className="mt-[18px] text-[20px] md:text-[22px] font-[610] tracking-[-0.015em]">{f.title}</div>
-                <div className="mt-[10px] text-[14.8px] leading-[1.6] text-foreground/70">{f.desc}</div>
+    <section id="promise" className="band scroll-mt-[60px] py-[64px] md:py-[96px]">
+      <div className="mx-auto w-[var(--width-content-width)]">
+        <SectionHeader tag="Why NSpace" title="Why Brands Choose NSpace" desc="We deliver results that speak for themselves." />
+        <div className="mt-[36px] grid gap-[16px] md:mt-[48px] md:grid-cols-3">
+          {items.map((it, i) => (
+            <FadeBlur key={it.title} delay={i * 0.06}>
+              <div className="card h-full rounded-[18px] p-[26px]">
+                <div className="grid h-[42px] w-[42px] place-items-center rounded-[12px] bg-[#f5f5f7] text-[18px] text-[#0071e3]">{it.icon}</div>
+                <h3 className="mt-[16px] text-[19px] font-[600] tracking-[-0.015em] text-[#1d1d1f]">{it.title}</h3>
+                <p className="mt-[8px] text-[14.5px] leading-[1.55] text-[#6e6e73]">{it.desc}</p>
               </div>
             </FadeBlur>
           ))}
@@ -645,31 +528,30 @@ function PromiseSection() {
 
 function Testimonial() {
   return (
-    <section id="testimonials" className="py-[70px] md:py-[96px] border-y border-white/[0.065] bg-[rgba(255,255,255,0.012)]">
-      <div className="w-content-width mx-auto">
-        <div className="max-w-[980px] mx-auto text-center card rounded-[28px] px-[24px] md:px-[56px] py-[46px] md:py-[64px] relative overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full opacity-[0.09] blur-[80px]" style={{ background: "radial-gradient(circle, #fff, transparent 70%)" }} />
-          <FadeBlur>
-            <div className="text-amber-300 text-[16px] tracking-wider">★★★★★</div>
-            <blockquote className="mt-[20px] text-[24px] md:text-[30px] lg:text-[34px] leading-[1.38] font-[520] tracking-[-0.017em] text-balance">
-              “Webild completely transformed our online presence. The team delivered a <em className="font-serif italic text-white">stunning website</em> that exceeded our expectations and doubled our conversion rate.”
-            </blockquote>
-            <div className="mt-[18px] text-[14.6px] text-foreground/73">— Maria Santos, CEO at Luxuria Travel</div>
+    <section id="testimonials" className="py-[64px] md:py-[92px]">
+      <div className="mx-auto w-[var(--width-content-width)]">
+        <div className="mx-auto max-w-[880px] text-center">
+          <div className="text-[15px] tracking-[3px] text-[#1d1d1f]">★★★★★</div>
+          <FadeBlur delay={0.05}>
+            <p className="mt-[18px] text-[26px] font-[600] leading-[1.3] tracking-[-0.02em] text-[#1d1d1f] text-balance sm:text-[32px] md:text-[38px]">
+              “They rebuilt our storefront and gave us a{" "}
+              <span className="text-[#0071e3]">stunning website</span>
+              {" "}that finally converts.”
+            </p>
           </FadeBlur>
-          <FadeBlur delay={0.14}>
-            <div className="mt-[30px] flex items-center justify-center gap-[10px] flex-wrap">
+          <p className="mt-[16px] text-[14px] text-[#6e6e73]">— Maria Santos, CEO at Luxuria Travel</p>
+          <div className="mt-[26px] flex items-center justify-center gap-[10px]">
+            <div className="flex">
               {[
                 "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/team-1.webp",
                 "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/team-2.webp",
                 "https://webuild-dev.s3.eu-north-1.amazonaws.com/default/templates/web-agency-2/team-3.webp",
-                "https://randomuser.me/api/portraits/men/32.jpg",
-                "https://randomuser.me/api/portraits/women/44.jpg",
-              ].map((src, i) => (
-                <img key={i} src={src} className="w-[44px] h-[44px] rounded-full border-[2px] border-[#161616] object-cover -ml-0 first:ml-0" alt="" />
+              ].map((u, i) => (
+                <img key={i} src={u} alt="" className="h-[34px] w-[34px] rounded-full border-2 border-white object-cover -ml-[9px] first:ml-0" />
               ))}
-              <div className="ml-2 text-[12.7px] text-foreground/66">+ 118 happy clients</div>
             </div>
-          </FadeBlur>
+            <span className="text-[12.5px] text-[#6e6e73]">+ 118 happy clients</span>
+          </div>
         </div>
       </div>
     </section>
@@ -678,24 +560,20 @@ function Testimonial() {
 
 function MetricsSection() {
   return (
-    <section className="py-[88px] md:py-[118px]">
-      <div className="w-content-width mx-auto">
-        <SectionHeader
-          tag="Results"
-          title="Ship beautiful. Ship fast."
-          desc="Engineering culture baked into design. Measured outcomes from day one."
-        />
-        <div className="grid md:grid-cols-3 gap-[18px] md:gap-[22px] mt-[48px] md:mt-[62px]">
+    <section className="band py-[64px] md:py-[96px]">
+      <div className="mx-auto w-[var(--width-content-width)]">
+        <SectionHeader tag="Outcomes" title="Ship beautiful. Ship fast." desc="Engineering culture baked into design. Measured outcomes from day one." />
+        <div className="mt-[36px] grid gap-[16px] md:mt-[48px] md:grid-cols-3">
           {metrics.map((m, i) => (
-            <FadeBlur key={m.value} delay={i*0.06}>
-              <div className="card rounded-[26px] p-[28px] md:p-[32px] h-full flex flex-col">
-                <div className="text-[56px] md:text-[64px] font-[640] tracking-[-0.032em] leading-[0.95] gradient-text">{m.value}</div>
-                <div className="mt-[6px] text-[17px] font-[540] tracking-[-0.01em]">{m.title}</div>
-                <div className="border-t border-white/[0.075] mt-[22px] pt-[20px] space-y-[13px]">
-                  {m.bullets.map(b => (
-                    <div key={b} className="flex items-start gap-3 text-[14.2px] text-foreground/78">
-                      <span className="mt-[3px] w-[20px] h-[20px] rounded-[7px] primary-button grid place-items-center text-[#111] shrink-0">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
+            <FadeBlur key={m.title} delay={i * 0.06}>
+              <div className="card flex h-full flex-col rounded-[18px] p-[26px] md:p-[30px]">
+                <div className="text-[48px] font-[600] leading-none tracking-[-0.03em] text-[#1d1d1f] md:text-[56px]">{m.value}</div>
+                <div className="mt-[8px] text-[16px] font-[500] text-[#1d1d1f]">{m.title}</div>
+                <div className="mt-[20px] space-y-[12px] border-t border-black/[0.07] pt-[18px]">
+                  {m.bullets.map((b) => (
+                    <div key={b} className="flex items-start gap-[10px] text-[13.5px] text-[#6e6e73]">
+                      <span className="mt-[1px] grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-[#0071e3]">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.4"><path d="M20 6L9 17l-5-5" /></svg>
                       </span>
                       {b}
                     </div>
@@ -711,54 +589,41 @@ function MetricsSection() {
 }
 
 function TeamSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"]
-  });
-  const y1 = useTransform(scrollYProgress, [0,1], [40, -40]);
-  const y2 = useTransform(scrollYProgress, [0,1], [80, -10]);
   return (
-    <section id="team" ref={ref} className="py-[84px] md:py-[118px] border-t border-white/[0.065]">
-      <div className="w-content-width mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+    <section id="team" className="scroll-mt-[60px] py-[64px] md:py-[96px]">
+      <div className="mx-auto w-[var(--width-content-width)]">
+        <div className="flex flex-col gap-[10px] md:flex-row md:items-end md:justify-between">
           <div className="max-w-[620px]">
-            <FadeBlur><Pill>Team</Pill></FadeBlur>
-            <FadeBlur delay={0.08}>
-              <h2 className="mt-3 text-[34px] md:text-[50px] leading-[1.08] font-[630] tracking-[-0.022em] gradient-text">Operators, not vendors.</h2>
-            </FadeBlur>
-            <FadeBlur delay={0.14}>
-              <p className="mt-3 text-[16.6px] text-foreground/70 max-w-[520px]">A tight senior squad. Designers who code. Engineers who care about pixels. No junior rotations.</p>
-            </FadeBlur>
+            <Pill>Team</Pill>
+            <h2 className="mt-[14px] text-[32px] font-[600] leading-[1.08] tracking-[-0.022em] text-[#1d1d1f] sm:text-[40px] md:text-[46px]">
+              Operators, not vendors.
+            </h2>
+            <p className="mt-[12px] max-w-[520px] text-[15.5px] leading-[1.55] text-[#6e6e73]">
+              A tight senior squad. Designers who code. Engineers who care about pixels. No junior rotations.
+            </p>
           </div>
-          <FadeBlur delay={0.1}>
-            <SecondaryBtn href="#contact">Meet us</SecondaryBtn>
-          </FadeBlur>
+          <a href="#contact" className="text-[15px] font-[500] text-[#0066cc] hover:underline">Meet us</a>
         </div>
 
-        <div className="mt-[44px] md:mt-[56px] grid sm:grid-cols-2 lg:grid-cols-4 gap-[16px] md:gap-[20px]">
-          {team.map((t, i) => (
-            <motion.div
-              key={t.name}
-              style={{ y: i % 2 === 0 ? y1 : y2 }}
-            >
-              <FadeBlur delay={i*0.05}>
-                <div className="card rounded-[24px] overflow-hidden group">
-                  <div className="relative aspect-[4/5] overflow-hidden">
-                    <img src={t.img} alt={t.name} className="w-full h-full object-cover transition duration-[700ms] group-hover:scale-[1.055]" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/15 to-transparent" />
-                    <div className="absolute left-4 bottom-4 right-4">
-                      <div className="text-[17.5px] font-[610] tracking-[-0.012em] text-white">{t.name}</div>
-                      <div className="text-[13.4px] text-white/80">{t.role}</div>
-                    </div>
-                  </div>
-                  <div className="px-[16px] py-[13px] text-[12.8px] text-foreground/66 flex items-center justify-between">
-                    <span>{t.focus}</span>
-                    <span className="text-[11px] px-2 py-[4px] rounded-full secondary-button border border-white/[0.08]">Available</span>
+        <div className="mt-[34px] grid grid-cols-2 gap-[14px] md:mt-[44px] lg:grid-cols-4 lg:gap-[18px]">
+          {team.map((m, i) => (
+            <FadeBlur key={m.name} delay={i * 0.05}>
+              <div className="card overflow-hidden rounded-[18px]">
+                <div className="relative aspect-[4/5] overflow-hidden bg-[#f5f5f7]">
+                  <img src={m.img} alt={m.name} loading="lazy" className="h-full w-full object-cover" />
+                </div>
+                <div className="p-[14px]">
+                  <div className="text-[16px] font-[600] tracking-[-0.01em] text-[#1d1d1f]">{m.name}</div>
+                  <div className="text-[13px] text-[#86868b]">{m.role}</div>
+                  <div className="mt-[10px] flex items-center justify-between">
+                    <span className="text-[11.5px] text-[#86868b]">{m.focus}</span>
+                    <span className="inline-flex items-center gap-[5px] rounded-[980px] bg-[#f5f5f7] px-[8px] py-[3px] text-[10.5px] font-[500] text-[#1d7a3c]">
+                      <span className="h-[5px] w-[5px] rounded-full bg-[#34c759]" /> Available
+                    </span>
                   </div>
                 </div>
-              </FadeBlur>
-            </motion.div>
+              </div>
+            </FadeBlur>
           ))}
         </div>
       </div>
@@ -767,48 +632,53 @@ function TeamSection() {
 }
 
 function FaqSection() {
-  const [open, setOpen] = useState(0);
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
   return (
-    <section id="faq" className="py-[82px] md:py-[112px] border-t border-white/[0.065]">
-      <div className="w-content-width mx-auto grid lg:grid-cols-12 gap-10">
+    <section id="faq" className="band py-[64px] md:py-[92px]">
+      <div className="mx-auto grid w-[var(--width-content-width)] gap-[32px] lg:grid-cols-12 lg:gap-[44px]">
         <div className="lg:col-span-5">
-          <FadeBlur><Pill>FAQ</Pill></FadeBlur>
-          <FadeBlur delay={0.08}>
-            <h2 className="mt-3 text-[34px] md:text-[46px] leading-[1.1] font-[630] tracking-[-0.022em] gradient-text">Questions,<br/>straight answers.</h2>
-          </FadeBlur>
-          <FadeBlur delay={0.15}>
-            <p className="mt-4 text-[15.7px] text-foreground/70 max-w-[420px]">Transparent pricing, clear timelines, and senior hands on every project. If it’s not here, just ask.</p>
-          </FadeBlur>
+          <Pill>FAQ</Pill>
+          <h2 className="mt-[14px] text-[32px] font-[600] leading-[1.08] tracking-[-0.022em] text-[#1d1d1f] sm:text-[38px] md:text-[44px]">
+            Questions,<br />straight answers.
+          </h2>
+          <p className="mt-[14px] max-w-[420px] text-[15px] leading-[1.55] text-[#6e6e73]">
+            Transparent pricing, clear timelines, and senior hands on every project. If it’s not here, just ask.
+          </p>
+          <a href="#contact" className="mt-[18px] inline-block text-[15px] font-[500] text-[#0066cc] hover:underline">Start a project</a>
         </div>
+
         <div className="lg:col-span-7">
-          <div className="space-y-[12px]">
-            {faqs.map((f, i) => (
-              <div key={f.q} className="card rounded-[18px] overflow-hidden">
-                <button
-                  onClick={() => setOpen(open === i ? -1 : i)}
-                  className="w-full text-left px-[20px] md:px-[24px] py-[18px] md:py-[20px] flex items-center justify-between gap-6"
-                >
-                  <span className="text-[16.8px] md:text-[17.8px] font-[540] tracking-[-0.012em]">{f.q}</span>
-                  <span className={cn("w-[30px] h-[30px] rounded-full secondary-button grid place-items-center transition-transform flex-shrink-0 border border-white/[0.09]", open===i && "rotate-45")}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                  </span>
-                </button>
-                <AnimatePresence initial={false}>
-                  {open === i && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: .34, ease: [0.22,1,0.36,1] }}
-                    >
-                      <div className="px-[20px] md:px-[24px] pb-[20px] text-[14.8px] leading-[1.65] text-foreground/73 border-t border-white/[0.065]">
-                        <div className="pt-[14px]">{f.a}</div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
+          <div className="space-y-[10px]">
+            {faqs.map((f, i) => {
+              const open = openIdx === i;
+              return (
+                <div key={f.q} className="overflow-hidden rounded-[14px] border border-black/[0.07] bg-white">
+                  <button
+                    onClick={() => setOpenIdx(open ? null : i)}
+                    className="flex min-h-[56px] w-full items-center justify-between gap-[16px] px-[18px] py-[16px] text-left"
+                    aria-expanded={open}
+                  >
+                    <span className="text-[16px] font-[500] tracking-[-0.01em] text-[#1d1d1f]">{f.q}</span>
+                    <span className="grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full bg-[#f5f5f7] text-[#0071e3] transition-transform duration-200" style={{ transform: open ? "rotate(180deg)" : "none" }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m6 9 6 6 6-6" /></svg>
+                    </span>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {open && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <p className="border-t border-black/[0.06] px-[18px] pb-[18px] pt-[14px] text-[14.5px] leading-[1.6] text-[#6e6e73]">{f.a}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -817,51 +687,66 @@ function FaqSection() {
 }
 
 function Contact() {
+  const [sent, setSent] = useState(false);
   return (
-    <section id="contact" className="py-[88px] md:py-[122px] border-t border-white/[0.065]">
-      <div className="w-content-width mx-auto">
-        <div className="card rounded-[30px] p-[28px] md:p-[52px] relative overflow-hidden glow-ring">
-          <div className="absolute -right-24 -top-24 w-[360px] h-[360px] rounded-full opacity-[0.085] blur-[90px]" style={{ background: "radial-gradient(circle, #fff, transparent 70%)" }} />
-          <div className="grid lg:grid-cols-12 gap-10 items-center relative">
+    <section id="contact" className="scroll-mt-[60px] bg-white py-[64px] md:py-[96px]">
+      <div className="mx-auto w-[var(--width-content-width)]">
+        <div className="card overflow-hidden rounded-[22px] p-[26px] md:p-[44px]">
+          <div className="grid items-center gap-[32px] lg:grid-cols-12 lg:gap-[44px]">
             <div className="lg:col-span-7">
-              <FadeBlur><Pill>Start a project</Pill></FadeBlur>
-              <FadeBlur delay={0.08}>
-                <h2 className="mt-3 text-[34px] md:text-[48px] leading-[1.08] font-[620] tracking-[-0.022em] gradient-text">
-                  Tell us what you’re building.
-                </h2>
-              </FadeBlur>
-              <FadeBlur delay={0.14}>
-                <p className="mt-4 text-[16.8px] text-foreground/72 max-w-[520px]">We’ll reply in 6 hours with scope, timeline, and a lean proposal. Sprint starts next Monday.</p>
-              </FadeBlur>
+              <Pill>Start a project</Pill>
+              <h2 className="mt-[14px] text-[30px] font-[600] leading-[1.08] tracking-[-0.022em] text-[#1d1d1f] sm:text-[38px] md:text-[44px]">
+                Tell us what you’re building.
+              </h2>
+              <p className="mt-[12px] max-w-[520px] text-[15.5px] leading-[1.55] text-[#6e6e73]">
+                We’ll reply in 6 hours with scope, timeline, and a lean proposal. Sprint starts next Monday.
+              </p>
 
-              <div className="mt-8 grid sm:grid-cols-2 gap-3 max-w-[610px]">
-                <input placeholder="Your name" className="h-[52px] px-[16px] rounded-[14px] bg-[#121212] border border-white/[0.085] outline-none focus:border-white/[0.22] text-[14.7px] placeholder:text-foreground/45" />
-                <input placeholder="Email" type="email" className="h-[52px] px-[16px] rounded-[14px] bg-[#121212] border border-white/[0.085] outline-none focus:border-white/[0.22] text-[14.7px] placeholder:text-foreground/45" />
-                <textarea placeholder="Project in 1–2 sentences…" className="sm:col-span-2 h-[118px] px-[16px] pt-[14px] rounded-[14px] bg-[#121212] border border-white/[0.085] outline-none focus:border-white/[0.22] text-[14.7px] placeholder:text-foreground/45 resize-none" />
-                <div className="sm:col-span-2 flex flex-wrap items-center gap-3 pt-1">
-                  <PrimaryBtn>Send brief</PrimaryBtn>
-                  <span className="text-[13.2px] text-foreground/60">or email hello@webild.studio</span>
+              <form
+                className="mt-[24px] grid max-w-[610px] gap-[10px] sm:grid-cols-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const fd = new FormData(e.currentTarget);
+                  const body = `Name: ${fd.get("name")}\nEmail: ${fd.get("email")}\n\n${fd.get("brief")}`;
+                  window.location.href = `mailto:hello@nspace.studio?subject=${encodeURIComponent("New project brief")}&body=${encodeURIComponent(body)}`;
+                  setSent(true);
+                }}
+              >
+                <input name="name" required placeholder="Your name" className="ios-input h-[48px] px-[14px] text-[15px] placeholder:text-[15px]" />
+                <input name="email" type="email" required placeholder="Email" className="ios-input h-[48px] px-[14px] text-[15px] placeholder:text-[15px]" />
+                <textarea name="brief" required placeholder="Project in 1–2 sentences…" className="ios-input h-[110px] resize-none px-[14px] pt-[12px] text-[15px] placeholder:text-[15px] sm:col-span-2" />
+                <div className="flex flex-wrap items-center gap-[12px] pt-[4px] sm:col-span-2">
+                  <PrimaryBtn type="submit">Send brief</PrimaryBtn>
+                  <span className="text-[13px] text-[#86868b]">
+                    or email <a href="mailto:hello@nspace.studio" className="text-[#0066cc] hover:underline">hello@nspace.studio</a>
+                  </span>
                 </div>
-              </div>
+                {sent && (
+                  <p className="text-[13px] text-[#1d7a3c] sm:col-span-2">
+                    Your mail app should be open with the brief ready to send.
+                  </p>
+                )}
+              </form>
             </div>
 
             <div className="lg:col-span-5">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-[10px]">
                 {[
                   { k: "< 6h", v: "Avg response" },
                   { k: "14d", v: "Launch MVP" },
                   { k: "98+", v: "Lighthouse" },
                   { k: "120+", v: "Ships" },
-                ].map(x => (
-                  <div key={x.k} className="rounded-[18px] bg-[#111114] border border-white/[0.066] p-[18px]">
-                    <div className="text-[27px] font-[640] tracking-[-0.018em]">{x.k}</div>
-                    <div className="text-[12.8px] text-foreground/66">{x.v}</div>
+                ].map((x) => (
+                  <div key={x.k} className="rounded-[14px] border border-black/[0.06] bg-[#f5f5f7] p-[16px]">
+                    <div className="text-[24px] font-[600] tracking-[-0.02em] text-[#1d1d1f]">{x.k}</div>
+                    <div className="text-[12.5px] text-[#6e6e73]">{x.v}</div>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 rounded-[18px] bg-[#111114] border border-white/[0.066] p-[18px] text-[13.7px] text-foreground/72 leading-relaxed">
-                “Fastest agency partner we’ve ever worked with. They shipped a better homepage in 9 days than 3 months of internal sprints.”<br/>
-                <span className="text-foreground/85">— CTO, Mailflow</span>
+              <div className="mt-[10px] rounded-[14px] border border-black/[0.06] bg-[#f5f5f7] p-[16px] text-[13.5px] leading-[1.6] text-[#6e6e73]">
+                “Fastest agency partner we’ve ever worked with. They shipped a better homepage in 9 days than 3 months of internal sprints.”
+                <br />
+                <span className="text-[#1d1d1f]">— CTO, Mailflow</span>
               </div>
             </div>
           </div>
@@ -872,87 +757,75 @@ function Contact() {
 }
 
 function Footer() {
+  const cols = [
+    { head: "Studio", links: ["Services", "Work", "Team", "Careers"] },
+    { head: "Resource", links: ["Blog", "Playbook", "Changelog", "Brand"] },
+    { head: "Social", links: ["Twitter", "LinkedIn", "Dribbble", "Instagram"] },
+    { head: "Legal", links: ["Privacy", "Terms", "Cookies", "Security"] },
+  ];
   return (
-    <footer className="relative border-t border-white/[0.075] pt-[66px] pb-[42px] overflow-hidden">
-      <div className="w-content-width mx-auto grid md:grid-cols-12 gap-10 text-[14.3px]">
-        <div className="md:col-span-5">
-          <div className="flex items-center gap-[10px]">
-            <div className="w-[34px] h-[34px] rounded-[11px] bg-white text-[#0d0d0d] grid place-items-center font-[700]">W</div>
-            <span className="text-[18px] font-[600] tracking-[-0.016em]">Webild</span>
-          </div>
-          <p className="mt-[14px] max-w-[360px] text-foreground/66 leading-[1.6]">Award-winning digital agency crafting high-converting websites, brands, and product interfaces.</p>
-          <div className="mt-5 text-[12.8px] text-foreground/52">© {new Date().getFullYear()} Webild Studio — San Francisco • Paris • Remote</div>
-        </div>
-        <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-8">
-          {[
-            { head: "Studio", links: ["Services","Work","Team","Careers"] },
-            { head: "Resource", links: ["Blog","Playbook","Changelog","Brand"] },
-            { head: "Social", links: ["Twitter","LinkedIn","Dribbble","Instagram"] },
-            { head: "Legal", links: ["Privacy","Terms","Cookies","Security"] },
-          ].map(col => (
-            <div key={col.head}>
-              <div className="text-[12px] uppercase tracking-wider text-foreground/46 mb-3">{col.head}</div>
-              <div className="space-y-[9px] text-foreground/74">
-                {col.links.map(l => <a key={l} href="#" className="block hover:text-white transition">{l}</a>)}
-              </div>
+    <footer className="band overflow-hidden border-t border-black/[0.08] pb-[40px] pt-[46px]">
+      <div className="mx-auto w-[var(--width-content-width)]">
+        <div className="grid gap-[32px] md:grid-cols-12">
+          <div className="md:col-span-5">
+            <div className="flex items-center gap-[8px]">
+              <span className="grid h-[24px] w-[24px] place-items-center rounded-[6px] bg-[#1d1d1f] text-[12px] font-[700] text-white">N</span>
+              <span className="text-[15px] font-[600] text-[#1d1d1f]">NSpace</span>
             </div>
-          ))}
+            <p className="mt-[12px] max-w-[340px] text-[12.5px] leading-[1.6] text-[#6e6e73]">
+              Award-winning digital agency crafting high-converting websites, brands, and product interfaces.
+            </p>
+            <div className="mt-[14px] text-[12px] text-[#86868b]">© {new Date().getFullYear()} NSpace Studio — San Francisco • Paris • Remote</div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-[26px] md:col-span-7 sm:grid-cols-4">
+            {cols.map((col) => (
+              <div key={col.head}>
+                <div className="mb-[10px] text-[11.5px] font-[600] text-[#1d1d1f]">{col.head}</div>
+                <div className="space-y-[8px]">
+                  {col.links.map((l) => (
+                    <a key={l} href="#" className="block text-[12px] text-[#6e6e73] transition hover:text-[#1d1d1f]">{l}</a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-[34px] flex flex-col items-center justify-between gap-[12px] border-t border-black/[0.08] pt-[18px] text-[12px] text-[#86868b] md:flex-row">
+          <div className="flex flex-wrap items-center justify-center gap-[6px] text-center">
+            Made with care • Global delivery • 🇺🇸 🇫🇷 🇯🇵
+          </div>
+          <div className="flex items-center gap-[18px]">
+            <a href="mailto:hello@nspace.studio" className="hover:text-[#1d1d1f]">hello@nspace.studio</a>
+            <span className="hidden sm:inline">ISO-27001 ready</span>
+          </div>
+        </div>
+
+        <div className="pointer-events-none mt-[22px] select-none text-center text-[17vw] font-[600] leading-[0.85] tracking-[-0.045em] text-black/[0.035] md:text-[12vw]">
+          NSPACE
         </div>
       </div>
-      <div className="w-content-width mx-auto mt-[52px] pt-[24px] border-t border-white/[0.065] flex flex-col md:flex-row items-center justify-between gap-4 text-[12.7px] text-foreground/52">
-        <div>Made with care • Global delivery • 🇺🇸 🇫🇷 🇯🇵</div>
-        <div className="flex items-center gap-5">
-          <span>hello@webild.studio</span>
-          <span className="hidden sm:inline">•</span>
-          <span>ISO-27001 ready</span>
-        </div>
-      </div>
-      {/* big ghost word */}
-      <div className="pointer-events-none select-none text-center text-[18vw] md:text-[13vw] font-[660] tracking-[-0.045em] leading-[0.86] text-white/[0.023] mt-[26px]">WEBILD</div>
     </footer>
   );
 }
 
 export default function App() {
-  // smooth anchor scroll
-  useEffect(() => {
-    const l = (e: MouseEvent) => {
-      const a = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null;
-      if (!a) return;
-      const id = a.getAttribute("href")?.slice(1);
-      if (!id) return;
-      const el = document.getElementById(id);
-      if (el) { e.preventDefault(); el.scrollIntoView({ behavior: "smooth", block: "start" }); }
-    };
-    document.addEventListener("click", l);
-    return () => document.removeEventListener("click", l);
-  }, []);
-
   return (
-    <div className="relative bg-background text-foreground min-h-screen">
-      <SiteBackground />
-      <div className="relative z-10">
-        <Navbar />
-        <main>
-          <Hero />
-          <Services />
-          <Work />
-          <PromiseSection />
-          <Testimonial />
-          <MetricsSection />
-          <TeamSection />
-          <FaqSection />
-          <Contact />
-        </main>
-        <Footer />
-      </div>
-
-      <style>{`
-      @keyframes orbit {
-        0% { transform: rotate(var(--initial-position,0deg)) translateX(var(--translate-position,134px)) rotate(calc(-1 * var(--initial-position,0deg))); }
-        100% { transform: rotate(calc(var(--initial-position,0deg) + 360deg)) translateX(var(--translate-position,134px)) rotate(calc(-1 * (var(--initial-position,0deg) + 360deg))); }
-      }
-      `}</style>
+    <div className="relative min-h-screen bg-white text-[#1d1d1f]">
+      <Navbar />
+      <main className="relative z-10">
+        <Hero />
+        <Services />
+        <Work />
+        <PromiseSection />
+        <Testimonial />
+        <MetricsSection />
+        <TeamSection />
+        <FaqSection />
+        <Contact />
+      </main>
+      <Footer />
     </div>
   );
 }
